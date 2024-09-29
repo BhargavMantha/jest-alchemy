@@ -1,0 +1,97 @@
+{
+  "name": "jest-alchemy",
+  "version": "1.0.0",
+  "author": "Bhargav Mantha",
+  "email": "manthabhargav@gmail.com",
+  "url": "http://bhargavmantha.dev/",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.10.0",
+    "npm": ">=10.2.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BhargavMantha/jest-alchemy"
+  },
+  "scripts": {
+    "v": "node -v && npm -v",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test:clear": "jest --clearCache",
+    "test": "tools/run-jest.sh",
+    "test:watch": "tools/run-jest.sh --watch",
+    "test:cov": "tools/run-jest.sh --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prepare": "husky && husky install",
+    "os:doc": "rm -rf ./documentation && npx @compodoc/compodoc -p tsconfig.json -s",
+    "commit": "cz",
+    "release": "standard-version --no-verify"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.2",
+    "@nestjs/core": "^10.0.2",
+    "@nestjs/platform-express": "^10.0.2",
+    "@types/lodash": "^4.17.9",
+    "cache-manager": "^6.1.0",
+    "chevrotain": "^11.0.3",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.1",
+    "geo-tz": "^8.1.1",
+    "lodash": "^4.17.21",
+    "merge-deep": "^3.0.3",
+    "module-alias": "^2.2.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@compodoc/compodoc": "^1.1.25",
+    "@nestjs/cli": "^10.4.2",
+    "@nestjs/devtools-integration": "^0.1.6",
+    "@nestjs/schematics": "^10.1.2",
+    "@nestjs/testing": "^10.3.10",
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.0",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/merge-deep": "^3.0.3",
+    "@types/node": "^20.14.11",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^7.16.1",
+    "@typescript-eslint/parser": "^7.16.1",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^8.0.0",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.7",
+    "node": "^22.5.0",
+    "prettier": "^3.3.3",
+    "source-map-support": "^0.5.21",
+    "standard-version": "^9.5.0",
+    "ts-jest": "^29.2.2",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsconfig-paths-jest": "^0.0.1",
+    "typescript": "^5.5.3"
+  },
+  "_moduleAliases": {
+    "@root": "dist"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
