@@ -1,4 +1,4 @@
-# Detailed Plan: JestAlchemy Implementation
+# [Detailed Plan: JestAlchemy Implementation](https://whimsical.com/jestalchemy-S7bctotLyetsmMUB4YNzHr)
 
 ## 0. Branding and Initial Setup
 
