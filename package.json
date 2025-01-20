@@ -35,6 +35,9 @@
     "release": "standard-version --no-verify"
   },
   "dependencies": {
+    "@cucumber/gherkin": "^29.0.0",
+    "@cucumber/gherkin-streams": "^5.0.1",
+    "@cucumber/messages": "^26.0.1",
     "@nestjs/common": "^10.0.2",
     "@nestjs/core": "^10.0.2",
     "@nestjs/platform-express": "^10.0.2",
@@ -54,6 +57,7 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@compodoc/compodoc": "^1.1.25",
+    "@cucumber/cucumber": "^11.0.1",
     "@nestjs/cli": "^10.4.2",
     "@nestjs/devtools-integration": "^0.1.6",
     "@nestjs/schematics": "^10.1.2",

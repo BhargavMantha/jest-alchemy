@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
-async function CreateTokenLexer() {
+export async function CreateTokenLexer() {
   const module = await (eval(`import('chevrotain')`) as Promise<any>);
   const createToken = module.createToken;
   const Lexer = module.Lexer;
+  const CstParser = module.CstParser;
+
+  // Whitespace (including newlines)
+  const WhiteSpace = createToken({
+    name: 'WhiteSpace',
+    pattern: /\s+/,
+    group: Lexer.SKIPPED,
+  });
 
   // Jest tokens
   const Describe = createToken({ name: 'Describe', pattern: /describe/ });
@@ -41,7 +49,7 @@ async function CreateTokenLexer() {
   const Plus = createToken({ name: 'Plus', pattern: /\+/ });
   const Minus = createToken({ name: 'Minus', pattern: /-/ });
   const Multiply = createToken({ name: 'Multiply', pattern: /\*/ });
-  const Divide = createToken({ name: 'Divide', pattern: /\/(?![\/\*])/ }); // Exclude // and /* to avoid conflicts with comments
+  const Divide = createToken({ name: 'Divide', pattern: /\/(?![\\/\\*])/ });
   const Equals = createToken({ name: 'Equals', pattern: /=/ });
 
   // HTML-like tokens
@@ -63,23 +71,19 @@ async function CreateTokenLexer() {
     group: Lexer.SKIPPED,
   });
 
-  // Whitespace
-  const WhiteSpace = createToken({
-    name: 'WhiteSpace',
-    pattern: /\s+/,
-    group: Lexer.SKIPPED,
-  });
-
   const Identifier = createToken({
     name: 'Identifier',
     pattern: /[a-zA-Z_]\w*/,
     longer_alt: HtmlIdentifier,
   });
-  // Catch all tokens
-  const Any = createToken({ name: 'Any', pattern: /./ });
-  // 2. Define Token List
+
+  // EOF token
+  const EOF = createToken({ name: 'EOF', pattern: Lexer.EOF });
+
+  // Define Token List
   const allTokens = [
     WhiteSpace,
+    // Comments
     SingleLineComment,
     MultiLineComment,
     // Jest tokens
@@ -100,7 +104,6 @@ async function CreateTokenLexer() {
     Import,
     Export,
     // Common tokens
-    Identifier,
     StringLiteral,
     NumberLiteral,
     Arrow,
@@ -118,63 +121,77 @@ async function CreateTokenLexer() {
     Multiply,
     Divide,
     Equals,
-    // HTML-like tokens (add these near the top, before other tokens that might conflict)
+    // HTML-like tokens
     LessThan,
     GreaterThan,
     Slash,
     HtmlIdentifier,
-    Any,
+    // Identifier (after more specific tokens)
+    Identifier,
+    // EOF
+    EOF,
   ];
 
-  // 3. Create lexer
-  const JestAlchemylexer = new Lexer(allTokens);
+  // Create lexer
+  const JestAlchemyLexer = new Lexer(allTokens, {
+    positionTracking: 'full',
+    ensureOptimizations: false,
+    skipValidations: true,
+  });
 
   return {
     createToken,
-    JestAlchemylexer,
+    JestAlchemyLexer,
     Lexer,
-    WhiteSpace,
-    SingleLineComment,
-    MultiLineComment,
-    Describe,
-    It,
-    Test,
-    Expect,
-    BeforeAll,
-    AfterAll,
-    BeforeEach,
-    AfterEach,
-    Let,
-    Const,
-    Function,
-    Interface,
-    Class,
-    Import,
-    Identifier,
-    StringLiteral,
-    NumberLiteral,
-    Arrow,
-    LParen,
-    RParen,
-    LCurly,
-    RCurly,
-    Semicolon,
-    Colon,
-    Comma,
-    Dot,
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
-    Equals,
+    CstParser,
+    allTokens,
+    tokenMap: {
+      Describe,
+      It,
+      Test,
+      Expect,
+      BeforeAll,
+      AfterAll,
+      BeforeEach,
+      AfterEach,
+      Let,
+      Const,
+      Function,
+      Interface,
+      Class,
+      Import,
+      Export,
+      Identifier,
+      StringLiteral,
+      NumberLiteral,
+      Arrow,
+      LParen,
+      RParen,
+      LCurly,
+      RCurly,
+      Semicolon,
+      Colon,
+      Comma,
+      Dot,
+      Plus,
+      Minus,
+      Multiply,
+      Divide,
+      Equals,
+      LessThan,
+      GreaterThan,
+      Slash,
+      HtmlIdentifier,
+      EOF,
+    },
   };
 }
 
 @Injectable()
 export class LexerService {
   async tokenize(input: string) {
-    const { JestAlchemylexer } = await CreateTokenLexer();
-    const lexingResult = JestAlchemylexer.tokenize(input);
+    const { JestAlchemyLexer } = await CreateTokenLexer();
+    const lexingResult = JestAlchemyLexer.tokenize(input);
 
     if (lexingResult.errors.length > 0) {
       console.error('Lexing errors:', lexingResult.errors);
@@ -183,4 +200,60 @@ export class LexerService {
 
     return lexingResult.tokens;
   }
+}
+
+export async function createTestLanguageParser() {
+  const { CstParser, tokenMap } = await CreateTokenLexer();
+
+  return class TestLanguageParser extends CstParser {
+    constructor() {
+      super(Object.values(tokenMap));
+      this.performSelfAnalysis();
+    }
+
+    public testSuite = this.RULE('testSuite', () => {
+      this.CONSUME(tokenMap.Describe);
+      this.CONSUME(tokenMap.StringLiteral);
+      this.CONSUME(tokenMap.LParen);
+      this.CONSUME(tokenMap.LCurly);
+      this.AT_LEAST_ONE(() => {
+        this.SUBRULE(this.testCase);
+      });
+      this.CONSUME(tokenMap.RCurly);
+      this.CONSUME(tokenMap.RParen);
+    });
+
+    public testCase = this.RULE('testCase', () => {
+      this.CONSUME(tokenMap.It);
+      this.CONSUME(tokenMap.StringLiteral);
+      this.CONSUME(tokenMap.LParen);
+      this.CONSUME(tokenMap.LCurly);
+      this.AT_LEAST_ONE(() => {
+        this.SUBRULE(this.expectStatement);
+      });
+      this.CONSUME(tokenMap.RCurly);
+      this.CONSUME(tokenMap.RParen);
+    });
+
+    public expectStatement = this.RULE('expectStatement', () => {
+      this.CONSUME(tokenMap.Expect);
+      this.CONSUME(tokenMap.LParen);
+      this.SUBRULE(this.expression);
+      this.CONSUME(tokenMap.RParen);
+      this.CONSUME(tokenMap.Dot);
+      this.CONSUME(tokenMap.Identifier); // toBe, toEqual, etc.
+      this.CONSUME2(tokenMap.LParen);
+      this.SUBRULE2(this.expression);
+      this.CONSUME2(tokenMap.RParen);
+      this.CONSUME(tokenMap.Semicolon);
+    });
+
+    public expression = this.RULE('expression', () => {
+      this.OR([
+        { ALT: () => this.CONSUME(tokenMap.Identifier) },
+        { ALT: () => this.CONSUME(tokenMap.StringLiteral) },
+        { ALT: () => this.CONSUME(tokenMap.NumberLiteral) },
+      ]);
+    });
+  };
 }

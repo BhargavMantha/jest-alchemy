@@ -1,20 +1,19 @@
 import { NestFactory } from '@nestjs/core';
-import { LexerService } from './compiler/lexer.service';
 import { AppModule } from './app.module';
+import { CompilerService } from './compiler/compiler.service';
 
-const inputCode = `
-  describe('My Test Suite', () => {
-    it('should work', () => {
-      expect(2 + 2).toBe(4);
-    });
-  });
+const gherkinInput = `
+Feature: User Authentication
+Scenario: Successful user login
+Given a registered user exists
+When the user enters valid credentials
+Then the user should be logged in
 `;
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const lexerService = app.get<LexerService>(LexerService);
-  const tokens = await lexerService.tokenize(inputCode);
+  const compilerService = app.get<CompilerService>(CompilerService);
+  const tokens = await compilerService.compile(gherkinInput);
   console.log(tokens);
-  await app.listen(3000);
+  await app.listen(3003);
 }
 bootstrap();
