@@ -1,5 +1,5 @@
 {
-  "name": "jest-alchemy",
+  "name": "@bhargavmantha/jest-alchemy",
   "version": "1.0.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -7,7 +7,7 @@
   "author": "Bhargav Mantha",
   "email": "manthabhargav@gmail.com",
   "url": "http://bhargavmantha.dev/",
-  "private": "false",
+  "private": false,
   "license": "MIT",
   "engines": {
     "node": ">=20.10.0",
