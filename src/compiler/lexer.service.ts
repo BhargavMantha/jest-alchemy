@@ -2,258 +2,194 @@ import { Injectable } from '@nestjs/common';
 
 export async function CreateTokenLexer() {
   const module = await (eval(`import('chevrotain')`) as Promise<any>);
-  const createToken = module.createToken;
-  const Lexer = module.Lexer;
-  const CstParser = module.CstParser;
+  const { createToken, Lexer } = module;
 
-  // Whitespace (including newlines)
-  const WhiteSpace = createToken({
-    name: 'WhiteSpace',
-    pattern: /\s+/,
-    group: Lexer.SKIPPED,
-  });
-
-  // Jest tokens
-  const Describe = createToken({ name: 'Describe', pattern: /describe/ });
-  const It = createToken({ name: 'It', pattern: /it/ });
-  const Test = createToken({ name: 'Test', pattern: /test/ });
-  const Expect = createToken({ name: 'Expect', pattern: /expect/ });
-  const BeforeAll = createToken({ name: 'BeforeAll', pattern: /beforeAll/ });
-  const AfterAll = createToken({ name: 'AfterAll', pattern: /afterAll/ });
-  const BeforeEach = createToken({ name: 'BeforeEach', pattern: /beforeEach/ });
-  const AfterEach = createToken({ name: 'AfterEach', pattern: /afterEach/ });
-
-  // TypeScript tokens
-  const Let = createToken({ name: 'Let', pattern: /let/ });
-  const Const = createToken({ name: 'Const', pattern: /const/ });
-  const Function = createToken({ name: 'Function', pattern: /function/ });
-  const Interface = createToken({ name: 'Interface', pattern: /interface/ });
-  const Class = createToken({ name: 'Class', pattern: /class/ });
-  const Import = createToken({ name: 'Import', pattern: /import/ });
-  const Export = createToken({ name: 'Export', pattern: /export/ });
-
-  // Common tokens
-  const StringLiteral = createToken({ name: 'StringLiteral', pattern: /"(?:[^"\\]|\\.)*"/ });
-  const NumberLiteral = createToken({ name: 'NumberLiteral', pattern: /\d+(\.\d+)?/ });
-  const Arrow = createToken({ name: 'Arrow', pattern: /=>/ });
-  const LParen = createToken({ name: 'LParen', pattern: /\(/ });
-  const RParen = createToken({ name: 'RParen', pattern: /\)/ });
-  const LCurly = createToken({ name: 'LCurly', pattern: /{/ });
-  const RCurly = createToken({ name: 'RCurly', pattern: /}/ });
-  const Semicolon = createToken({ name: 'Semicolon', pattern: /;/ });
-  const Colon = createToken({ name: 'Colon', pattern: /:/ });
-  const Comma = createToken({ name: 'Comma', pattern: /,/ });
-  const Dot = createToken({ name: 'Dot', pattern: /\./ });
-
-  // Operators
-  const Plus = createToken({ name: 'Plus', pattern: /\+/ });
-  const Minus = createToken({ name: 'Minus', pattern: /-/ });
-  const Multiply = createToken({ name: 'Multiply', pattern: /\*/ });
-  const Divide = createToken({ name: 'Divide', pattern: /\/(?![\\/\\*])/ });
-  const Equals = createToken({ name: 'Equals', pattern: /=/ });
-
-  // HTML-like tokens
-  const LessThan = createToken({ name: 'LessThan', pattern: /</ });
-  const GreaterThan = createToken({ name: 'GreaterThan', pattern: />/ });
-  const Slash = createToken({ name: 'Slash', pattern: /\// });
-  const HtmlIdentifier = createToken({ name: 'HtmlIdentifier', pattern: /[a-zA-Z][a-zA-Z0-9-]*/ });
-
-  // Comments
-  const SingleLineComment = createToken({
-    name: 'SingleLineComment',
-    pattern: /\/\/.*/,
-    group: Lexer.SKIPPED,
-  });
-
-  const MultiLineComment = createToken({
-    name: 'MultiLineComment',
-    pattern: /\/\*[\s\S]*?\*\//,
-    group: Lexer.SKIPPED,
+  const EOF = createToken({
+    name: 'EOF',
+    pattern: Lexer.NA,
   });
 
   const Identifier = createToken({
     name: 'Identifier',
     pattern: /[a-zA-Z_]\w*/,
-    longer_alt: HtmlIdentifier,
+    line_breaks: false,
   });
 
-  // EOF token
-  const EOF = createToken({ name: 'EOF', pattern: Lexer.EOF });
+  const WhiteSpace = createToken({
+    name: 'WhiteSpace',
+    pattern: /\s+/,
+    group: Lexer.SKIPPED,
+    line_breaks: true,
+  });
 
-  // Define Token List
+  const SingleLineComment = createToken({
+    name: 'SingleLineComment',
+    pattern: /\/\/[^\n\r]*/,
+    group: Lexer.SKIPPED,
+    line_breaks: false,
+  });
+
+  // Create token definitions with consistent naming and patterns
+  const tokens = {
+    // Keywords with exact matches
+    Describe: createToken({
+      name: 'Describe',
+      pattern: 'describe', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    It: createToken({
+      name: 'It',
+      pattern: 'it', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    Expect: createToken({
+      name: 'Expect',
+      pattern: 'expect', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    Async: createToken({
+      name: 'Async',
+      pattern: 'async', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    Await: createToken({
+      name: 'Await',
+      pattern: 'await', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    Let: createToken({
+      name: 'Let',
+      pattern: 'let', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+    Const: createToken({
+      name: 'Const',
+      pattern: 'const', // Changed from regex to exact string match
+      longer_alt: Identifier,
+    }),
+
+    // Matchers as identifiers
+    ToBe: createToken({
+      name: 'ToBe',
+      pattern: 'toBe', // Changed from regex to exact string match
+      categories: Identifier,
+    }),
+    ToEqual: createToken({
+      name: 'ToEqual',
+      pattern: 'toEqual', // Changed from regex to exact string match
+      categories: Identifier,
+    }),
+    ToContain: createToken({
+      name: 'ToContain',
+      pattern: 'toContain', // Changed from regex to exact string match
+      categories: Identifier,
+    }),
+
+    // Literals with more precise patterns
+    StringLiteral: createToken({
+      name: 'StringLiteral',
+      pattern: /'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/,
+    }),
+
+    NumberLiteral: createToken({
+      name: 'NumberLiteral',
+      pattern: /-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/,
+    }),
+
+    BooleanLiteral: createToken({
+      name: 'BooleanLiteral',
+      pattern: /true|false/,
+      longer_alt: Identifier,
+    }),
+
+    // Punctuation
+    LParen: createToken({ name: 'LParen', pattern: '(' }),
+    RParen: createToken({ name: 'RParen', pattern: ')' }),
+    LCurly: createToken({ name: 'LCurly', pattern: '{' }),
+    RCurly: createToken({ name: 'RCurly', pattern: '}' }),
+    Semicolon: createToken({ name: 'Semicolon', pattern: ';' }),
+    Comma: createToken({ name: 'Comma', pattern: ',' }),
+    Dot: createToken({ name: 'Dot', pattern: '.' }),
+    Colon: createToken({ name: 'Colon', pattern: ':' }),
+    Arrow: createToken({ name: 'Arrow', pattern: '=>' }),
+    Equals: createToken({ name: 'Equals', pattern: '=' }),
+  };
+
+  // Define token order with precise precedence
   const allTokens = [
     WhiteSpace,
-    // Comments
     SingleLineComment,
-    MultiLineComment,
-    // Jest tokens
-    Describe,
-    It,
-    Test,
-    Expect,
-    BeforeAll,
-    AfterAll,
-    BeforeEach,
-    AfterEach,
-    // TypeScript tokens
-    Let,
-    Const,
-    Function,
-    Interface,
-    Class,
-    Import,
-    Export,
-    // Common tokens
-    StringLiteral,
-    NumberLiteral,
-    Arrow,
-    LParen,
-    RParen,
-    LCurly,
-    RCurly,
-    Semicolon,
-    Colon,
-    Comma,
-    Dot,
-    // Operators
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
-    Equals,
-    // HTML-like tokens
-    LessThan,
-    GreaterThan,
-    Slash,
-    HtmlIdentifier,
-    // Identifier (after more specific tokens)
+    // Keywords first
+    tokens.Describe,
+    tokens.Expect,
+    tokens.Async,
+    tokens.Await,
+    tokens.Const,
+    tokens.Let,
+    tokens.It,
+    tokens.ToBe,
+    tokens.ToEqual,
+    tokens.ToContain,
+    // Literals
+    tokens.StringLiteral,
+    tokens.NumberLiteral,
+    tokens.BooleanLiteral,
+    // Operators and punctuation
+    tokens.LParen,
+    tokens.RParen,
+    tokens.LCurly,
+    tokens.RCurly,
+    tokens.Semicolon,
+    tokens.Comma,
+    tokens.Dot,
+    tokens.Colon,
+    tokens.Arrow,
+    tokens.Equals,
+    // Base identifier last as fallback
     Identifier,
-    // EOF
     EOF,
   ];
 
-  // Create lexer
-  const JestAlchemyLexer = new Lexer(allTokens, {
-    positionTracking: 'full',
-    ensureOptimizations: false,
-    skipValidations: true,
-  });
-
   return {
-    createToken,
-    JestAlchemyLexer,
-    Lexer,
-    CstParser,
-    allTokens,
     tokenMap: {
-      Describe,
-      It,
-      Test,
-      Expect,
-      BeforeAll,
-      AfterAll,
-      BeforeEach,
-      AfterEach,
-      Let,
-      Const,
-      Function,
-      Interface,
-      Class,
-      Import,
-      Export,
+      ...tokens,
       Identifier,
-      StringLiteral,
-      NumberLiteral,
-      Arrow,
-      LParen,
-      RParen,
-      LCurly,
-      RCurly,
-      Semicolon,
-      Colon,
-      Comma,
-      Dot,
-      Plus,
-      Minus,
-      Multiply,
-      Divide,
-      Equals,
-      LessThan,
-      GreaterThan,
-      Slash,
-      HtmlIdentifier,
-      EOF,
+      SingleLineComment,
+      EOF, // Include EOF in tokenMap
     },
+    allTokens,
+    JestAlchemyLexer: new Lexer(allTokens, {
+      errorMessageProvider: {
+        buildUnexpectedCharactersMessage: (fullText, startOffset, length, line, column) => {
+          return `Unexpected character "${fullText.substr(startOffset, length)}" at line: ${line}, column: ${column}`;
+        },
+      },
+      recoveryEnabled: true,
+    }),
   };
 }
-
 @Injectable()
 export class LexerService {
   async tokenize(input: string) {
-    const { JestAlchemyLexer } = await CreateTokenLexer();
-    const lexingResult = JestAlchemyLexer.tokenize(input);
+    try {
+      const { JestAlchemyLexer } = await CreateTokenLexer();
+      const lexingResult = JestAlchemyLexer.tokenize(input);
 
-    if (lexingResult.errors.length > 0) {
-      console.error('Lexing errors:', lexingResult.errors);
-      throw new Error(`Lexing errors detected: ${JSON.stringify(lexingResult.errors)}`);
+      if (lexingResult.errors.length > 0) {
+        console.error('Lexing Errors:', lexingResult.errors);
+        throw new Error(`Lexing errors detected: ${JSON.stringify(lexingResult.errors, null, 2)}`);
+      }
+
+      // Debug output for tokens
+      console.log('\nTokenization result:');
+      lexingResult.tokens.forEach((token, index) => {
+        console.log(`${index}: ${token.tokenType.name} -> '${token.image}'`);
+      });
+
+      return lexingResult.tokens;
+    } catch (error) {
+      console.error('Tokenization error:', error);
+      throw error;
     }
-
-    return lexingResult.tokens;
   }
-}
-
-export async function createTestLanguageParser() {
-  const { CstParser, tokenMap } = await CreateTokenLexer();
-
-  return class TestLanguageParser extends CstParser {
-    constructor() {
-      super(Object.values(tokenMap));
-      this.performSelfAnalysis();
-    }
-
-    public testSuite = this.RULE('testSuite', () => {
-      this.CONSUME(tokenMap.Describe);
-      this.CONSUME(tokenMap.StringLiteral);
-      this.CONSUME(tokenMap.LParen);
-      this.CONSUME(tokenMap.LCurly);
-      this.AT_LEAST_ONE(() => {
-        this.SUBRULE(this.testCase);
-      });
-      this.CONSUME(tokenMap.RCurly);
-      this.CONSUME(tokenMap.RParen);
-    });
-
-    public testCase = this.RULE('testCase', () => {
-      this.CONSUME(tokenMap.It);
-      this.CONSUME(tokenMap.StringLiteral);
-      this.CONSUME(tokenMap.LParen);
-      this.CONSUME(tokenMap.LCurly);
-      this.AT_LEAST_ONE(() => {
-        this.SUBRULE(this.expectStatement);
-      });
-      this.CONSUME(tokenMap.RCurly);
-      this.CONSUME(tokenMap.RParen);
-    });
-
-    public expectStatement = this.RULE('expectStatement', () => {
-      this.CONSUME(tokenMap.Expect);
-      this.CONSUME(tokenMap.LParen);
-      this.SUBRULE(this.expression);
-      this.CONSUME(tokenMap.RParen);
-      this.CONSUME(tokenMap.Dot);
-      this.CONSUME(tokenMap.Identifier); // toBe, toEqual, etc.
-      this.CONSUME2(tokenMap.LParen);
-      this.SUBRULE2(this.expression);
-      this.CONSUME2(tokenMap.RParen);
-      this.CONSUME(tokenMap.Semicolon);
-    });
-
-    public expression = this.RULE('expression', () => {
-      this.OR([
-        { ALT: () => this.CONSUME(tokenMap.Identifier) },
-        { ALT: () => this.CONSUME(tokenMap.StringLiteral) },
-        { ALT: () => this.CONSUME(tokenMap.NumberLiteral) },
-      ]);
-    });
-  };
 }

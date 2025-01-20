@@ -1,18 +1,24 @@
 {
   "name": "jest-alchemy",
   "version": "1.0.0",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "Bhargav Mantha",
   "email": "manthabhargav@gmail.com",
   "url": "http://bhargavmantha.dev/",
-  "private": true,
+  "private": "false",
   "license": "MIT",
   "engines": {
     "node": ">=20.10.0",
     "npm": ">=10.2.3"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BhargavMantha/jest-alchemy"
+    "url": "git+https://github.com/BhargavMantha/jest-alchemy"
   },
   "scripts": {
     "v": "node -v && npm -v",
@@ -24,6 +30,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test:clear": "jest --clearCache",
+    "prepublishOnly": "npm run format && npm run lint",
     "test": "tools/run-jest.sh",
     "test:watch": "tools/run-jest.sh --watch",
     "test:cov": "tools/run-jest.sh --coverage",

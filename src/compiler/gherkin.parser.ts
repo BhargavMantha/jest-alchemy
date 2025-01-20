@@ -1,11 +1,5 @@
 import { GherkinStreams } from '@cucumber/gherkin-streams';
-import {
-  Envelope,
-  IdGenerator,
-  GherkinDocument,
-  Source,
-  SourceMediaType,
-} from '@cucumber/messages';
+import { Envelope, IdGenerator, Source, SourceMediaType } from '@cucumber/messages';
 
 export async function parseGherkin(gherkinContent: string): Promise<Envelope[]> {
   const newId = IdGenerator.uuid();
